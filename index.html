@@ -1437,35 +1437,42 @@
       document.getElementById('selectedTeamType').value = teamType;
     }
     
-    $(document).ready(function() {
-      // Carregar os dados do arquivo JSON de componentes
-      $.getJSON('componentes.json', function(data) {
-        let componentes = data.map(function(item) {
-          return { id: item.nome, text: item.nome };
-        });
+    // Função para carregar os componentes
+    function carregarComponentes() {
+      fetch('componentes.json')
+        .then(response => response.json())
+        .then(data => {
+          const componentesSelect = document.getElementById('pessoa');
+          data.componentes.forEach(componente => {
+            let option = document.createElement('option');
+            option.value = componente;
+            option.text = componente;
+            componentesSelect.appendChild(option);
+          });
+        })
+        .catch(error => console.error('Erro ao carregar componentes:', error));
+    }
 
-        // Inicializar o Select2 para o campo 'pessoa' (Nome do Componente)
-        $('#pessoa').select2({
-          data: componentes,
-          placeholder: "Digite para buscar",
-          allowClear: true
-        }).prop("readonly", true); // Apenas leitura
+    // Função para carregar os leads
+    function carregarLeads() {
+      fetch('leads.json')
+        .then(response => response.json())
+        .then(data => {
+          const leadsSelect = document.getElementById('lead');
+          data.leads.forEach(lead => {
+            let option = document.createElement('option');
+            option.value = lead.lead;
+            option.text = lead.lead;
+            leadsSelect.appendChild(option);
+          });
+        })
+        .catch(error => console.error('Erro ao carregar leads:', error));
+    }
 
-      });
-
-      // Carregar os dados do arquivo JSON de leads
-      $.getJSON('leads.json', function(data) {
-        let leads = data.map(function(item) {
-          return { id: item.lead, text: item.lead };
-        });
-
-        // Inicializar o Select2 para o campo 'lead'
-        $('#lead').select2({
-          data: leads,
-          placeholder: "Digite para buscar",
-          allowClear: true
-        }).prop("readonly", true); // Apenas leitura
-      });
+    // Chama as funções de carregamento
+    document.addEventListener('DOMContentLoaded', function() {
+      carregarComponentes();
+      carregarLeads();
     });
   </script>
 </body>
