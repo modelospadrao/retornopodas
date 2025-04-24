@@ -1319,22 +1319,23 @@
       setTimeout(() => {
         const doc = new jsPDF({ unit: 'pt', format: [widthPt, heightPt] });
         doc.html(container, {
-        x:0, y:0,
-        width: widthPt,
-        windowWidth: widthPx,
-        callback: pdfDoc => {
-          try {
+          x: 0, y: 0,
+          width: widthPt,
+          windowWidth: widthPx,
+          callback: pdfDoc => {
             pdfDoc.save(fileName);
-            // ... resto do seu código de sucesso
-          } catch(e) {
-            console.error("Erro ao salvar PDF:", e);
-            alert("Falha ao gerar PDF — veja o console para detalhes.");
-            // reativa o botão
-            btn.disabled = false;
+            // restaura botão
             btn.classList.remove('loading');
+            btn.textContent = 'PDF JÁ SALVO';
+            btn.style.backgroundColor = '#4CAF50';
+            btn.style.color = '#fff';
+            btn.style.border = '1px solid #4CAF50';
+            pdfSaved = true;
+            document.getElementById('whatsappButton').disabled = false;
           }
-        }
-      });
+        });
+      }, 50);
+    }
     
     document.getElementById('clickOverlay').addEventListener('click', function(e) {
       document.getElementById('body-popup').style.display = 'block';
