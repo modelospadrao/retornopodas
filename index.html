@@ -380,6 +380,24 @@
       width: 80px;      /* ou 60px, 100px, em%, em, etc */
       max-width: 100%;
     }
+    
+   /* indica que o PDF está sendo gerado */
+    .button-default.loading {
+      position: relative;
+      color: transparent !important;
+    }
+    .button-default.loading::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 16px; height: 16px;
+      margin: -8px 0 0 -8px;
+      border: 2px solid #fff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -1263,22 +1281,25 @@
 
     function savePdf() {
       if (!verificarCamposRespondidos()) return;
-      gerarMensagem(); // atualiza a previewBox
+      gerarMensagem();
 
-      // monta o nome do arquivo igual ao seu código atual
-      let lead    = document.getElementById('lead').value.trim();
-      let data    = document.getElementById('data').value.trim();
-      let ot_ane  = document.getElementById('ot_ane').value.trim();
-      let inc     = document.getElementById('inc').value.trim();
-      let endereco= document.getElementById('endereco').value.trim();
+      // desativa o botão e aplica classe de loading
+      const btn = document.getElementById('pdfButton');
+      btn.disabled = true;
+      btn.classList.add('loading');
 
+      // gera filename
+      let lead     = document.getElementById('lead').value.trim();
+      let data     = document.getElementById('data').value.trim();
+      let ot_ane   = document.getElementById('ot_ane').value.trim();
+      let inc      = document.getElementById('inc').value.trim();
+      let endereco = document.getElementById('endereco').value.trim();
       if (data) {
         const p = data.split('-');
         data = `${p[2]}_${p[1]}_${p[0]}`;
       }
-      [ lead, ot_ane, inc, endereco ] = [ lead, ot_ane, inc, endereco ]
+      [lead, ot_ane, inc, endereco] = [lead, ot_ane, inc, endereco]
         .map(s => s.replace(/\s+/g,'_').toUpperCase());
-
       let fileName = `RETORNO_CAMPO EXECUTADO_${lead}`;
       if (data)    fileName += `_EM_${data}`;
       if (ot_ane)  fileName += `_ATRAVÉS_OT-ANE_${ot_ane}`;
@@ -1286,39 +1307,34 @@
       if (endereco)fileName += `_NO_ENDERECO_${endereco}`;
       fileName += '.PDF';
 
-      // seleciona o container e mede tudo
+      // medida do container
       const container = document.querySelector('.container');
       const widthPx   = container.offsetWidth;
-      const heightPx  = container.scrollHeight; 
-      const pxToPt    = px => px * 72 / 96; // 96dpi→72pt
-
+      const heightPx  = container.scrollHeight;
+      const pxToPt    = px => px * 72 / 96;
       const widthPt   = pxToPt(widthPx);
       const heightPt  = pxToPt(heightPx);
 
-      // cria PDF de 1 página com altura total
-      const doc = new jsPDF({
-        unit: 'pt',
-        format: [ widthPt, heightPt ]
-      });
-
-      // renderiza o HTML/CSS no PDF
-      doc.html(container, {
-        x: 0, y: 0,
-        width: widthPt,
-        windowWidth: widthPx,
-        callback: pdfDoc => {
-          pdfDoc.save(fileName);
-          // estiliza botão igual antes
-          const btn = document.getElementById('pdfButton');
-          btn.textContent = 'PDF JÁ SALVO';
-          btn.style.backgroundColor = '#4CAF50';
-          btn.style.color = '#fff';
-          btn.style.border = '1px solid #4CAF50';
-          btn.disabled = true;
-          pdfSaved = true;
-          document.getElementById('whatsappButton').disabled = false;
-        }
-      });
+      // roda em timeout para não travar UI imediatamente
+      setTimeout(() => {
+        const doc = new jsPDF({ unit: 'pt', format: [widthPt, heightPt] });
+        doc.html(container, {
+          x: 0, y: 0,
+          width: widthPt,
+          windowWidth: widthPx,
+          callback: pdfDoc => {
+            pdfDoc.save(fileName);
+            // restaura botão
+            btn.classList.remove('loading');
+            btn.textContent = 'PDF JÁ SALVO';
+            btn.style.backgroundColor = '#4CAF50';
+            btn.style.color = '#fff';
+            btn.style.border = '1px solid #4CAF50';
+            pdfSaved = true;
+            document.getElementById('whatsappButton').disabled = false;
+          }
+        });
+      }, 50);
     }
     
     document.getElementById('clickOverlay').addEventListener('click', function(e) {
