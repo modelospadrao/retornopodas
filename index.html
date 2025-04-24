@@ -472,7 +472,7 @@
     ⚠️ ATENÇÃO: Todos os campos estão bloqueados!<br>
     Reinicie a página utilizando o botão "REINICIAR".
   </div>
-  
+  <div id="pdfContent">
   <div class="container">
     <h2 style="text-align: center; font-size: 25px; font-weight: bold; color: #e63946;">
       MODELO RETORNO DE CAMPO<br>PODAS PREVETIVA/CORRETIVA
@@ -1308,7 +1308,7 @@
       fileName += '.PDF';
 
       // medida do container
-      const container = document.querySelector('.container');
+      const container = document.getElementById('pdfContent');
       const widthPx   = container.offsetWidth;
       const heightPx  = container.scrollHeight;
       const pxToPt    = px => px * 72 / 96;
@@ -1319,23 +1319,22 @@
       setTimeout(() => {
         const doc = new jsPDF({ unit: 'pt', format: [widthPt, heightPt] });
         doc.html(container, {
-          x: 0, y: 0,
-          width: widthPt,
-          windowWidth: widthPx,
-          callback: pdfDoc => {
+        x:0, y:0,
+        width: widthPt,
+        windowWidth: widthPx,
+        callback: pdfDoc => {
+          try {
             pdfDoc.save(fileName);
-            // restaura botão
+            // ... resto do seu código de sucesso
+          } catch(e) {
+            console.error("Erro ao salvar PDF:", e);
+            alert("Falha ao gerar PDF — veja o console para detalhes.");
+            // reativa o botão
+            btn.disabled = false;
             btn.classList.remove('loading');
-            btn.textContent = 'PDF JÁ SALVO';
-            btn.style.backgroundColor = '#4CAF50';
-            btn.style.color = '#fff';
-            btn.style.border = '1px solid #4CAF50';
-            pdfSaved = true;
-            document.getElementById('whatsappButton').disabled = false;
           }
-        });
-      }, 50);
-    }
+        }
+      });
     
     document.getElementById('clickOverlay').addEventListener('click', function(e) {
       document.getElementById('body-popup').style.display = 'block';
